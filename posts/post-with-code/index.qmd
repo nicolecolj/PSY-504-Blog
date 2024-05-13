@@ -28,6 +28,30 @@ At its core, permutation testing involves randomly rearranging (permuting) the l
 
 ## Advantages of Permutation Testing for Multinomial Regressions
 
+### But first, what is multinomial regression?
+
+In binary logistic regression, the outcome is typically modeled with a logistic function predicting the probability of one of the two categories, given a set of independent variables. Multinomial logistic regression generalizes this approach to multiple categories by using a series of logistic equations to compare each category to a reference category. The probabilities derived from these equations are relative to the reference category, which is usually chosen automatically by the software or can be manually specified.
+
+#### Model Formulation
+
+The model estimates the probabilities of being in each category of the dependent variable as a function of the independent variables. It does this through what are known as the log-odds or logit transformations, where each category (except the reference category) will have its own set of regression coefficients.
+
+Mathematically, if you have a response variable (Y) with (K) possible outcomes, the probability of (Y) equaling a particular category (k) can be modeled as:
+
+\[ P(Y = k \mid X) = \frac{e^{\beta_{k0} + \beta_{k1}X_1 + \cdots + \beta_{kp}X_p}}{1 + \sum_{j=1}^{K-1} e^{\beta_{j0} + \beta_{j1}X_1 + \cdots + \beta_{jp}X_p}} \]
+
+where (X_1, X_2, \ldots, X_p) are the predictor variables, and (\beta*{k0},* \beta{k1}, \ldots, \beta\_{kp}) are the coefficients for category (k).
+
+#### Estimation
+
+The coefficients (\beta\_{kj}) are typically estimated using maximum likelihood estimation (MLE). This method seeks to find the set of coefficients that maximize the likelihood of observing the sample given the model.
+
+#### Interpretation
+
+Interpreting the coefficients in multinomial logistic regression is similar to binary logistic regression, but instead of comparing the log-odds of the outcome to a "no event" condition, each coefficient represents the log-odds of being in the target category relative to the reference category, given a one-unit change in the predictor.
+
+### Applying Permutation Testing
+
 Permutation testing is particularly suited for calculating p-values in the context of multinomial logistic regression for several reasons. This method provides robust and reliable significance testing that can be superior to traditional methods, especially when standard assumptions are violated or when the data structure is complex.
 
 1.  **Non-Parametric Approach:** Multinomial logistic regression models, which predict categorical outcomes with more than two categories, often struggle with issues like non-normality of residuals and complex, nonlinear relationships between variables. Permutation testing is a non-parametric technique, meaning it does not rely on assumptions about the distribution of the variables or the form of the model. This characteristic makes it highly suitable for the categorical nature of the data in multinomial logistic regression, where such assumptions cannot be validated easily.
@@ -106,6 +130,55 @@ To use `calc_pval`, you need a dataframe `df` that includes at least one categor
 result_pvals <- calc_pval(df = your_data, outcome = "YourOutcomeVariable", predictors = c("Predictor1", "Predictor2"), nreps = 1000)
 print(result_pvals)
 ```
+
+### Example Dataset: College Major Choice
+
+Suppose we have a dataset from a survey of college students. The dataset includes the following variables:
+
+-   **Major**: The student's chosen major (Business, Engineering, Humanities - categorical, with Humanities as the reference category).
+-   **Math_Score**: Score on a mathematics aptitude test (continuous).
+-   **Verbal_Score**: Score on a verbal aptitude test (continuous).
+-   **Gender**: Male or Female (binary, categorical).
+
+We want to model the probability of a student choosing Business or Engineering over Humanities, based on their math and verbal scores and gender.
+
+### Building the Model
+
+Using R, we can specify our multinomial logistic regression model like this:
+
+``` r
+library(nnet)  
+
+model <- multinom(Major ~ Math_Score + Verbal_Score + Gender, data = df)
+```
+
+### Model Output Interpretation
+
+The output of the model would give us a set of coefficients for Business and Engineering, relative to Humanities. Here's how you might interpret these coefficients:
+
+-   **Intercept for Business**: The log-odds of choosing Business over Humanities when all other variables are zero.
+-   **Math_Score for Business**: The change in log-odds of choosing Business over Humanities for a one-unit increase in Math_Score, holding other variables constant.
+-   **Verbal_Score for Business**: Similar to Math_Score, but for Verbal_Score.
+-   **Gender for Business**: The change in log-odds of choosing Business over Humanities if the student is male (assuming 'Male' is coded as 1).
+
+### Example Interpretation:
+
+Let's say the coefficients for Business relative to Humanities are as follows:
+
+-   Intercept: -1.50
+-   Math_Score: 0.10
+-   Verbal_Score: 0.05
+-   Gender (Male): 0.25
+
+This means: - For every one-point increase in Math_Score, the log-odds of choosing Business over Humanities increases by 0.10. - Being male increases the log-odds of choosing Business over Humanities by 0.25 compared to being female.
+
+### Permutation Testing
+
+Permutation testing in this context would involve: 1. **Calculating the Observed Statistic**: Compute the regression coefficients with the original data. 2. **Permutation**: Randomly shuffle the Major categories among the students while keeping the predictors the same. 3. **Recompute Coefficients**: Fit the regression model to each permuted dataset and calculate the coefficients. 4. **Comparison and P-Value Calculation**: Compare the observed coefficients to those obtained from the permuted datasets. The p-value for each coefficient is calculated as the proportion of times the permuted coefficients are as extreme as or more extreme than the observed coefficients.
+
+### Interpreting the Permutation Test:
+
+Suppose the p-value for the Gender (Male) coefficient in choosing Business over Humanities is 0.03. This suggests that the observed relationship between gender and major choice is statistically significant at a conventional alpha level of 0.05 (i.e., there is only a 3% chance that such an extreme coefficient would be observed if there was no actual association between gender and major choice).
 
 ### I hope this was helpful!
 
