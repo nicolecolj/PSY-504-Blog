@@ -40,7 +40,7 @@ Mathematically, if you have a response variable (Y) with (K) possible outcomes, 
 
 \[ P(Y = k \mid X) = \frac{e^{\beta_{k0} + \beta_{k1}X_1 + \cdots + \beta_{kp}X_p}}{1 + \sum_{j=1}^{K-1} e^{\beta_{j0} + \beta_{j1}X_1 + \cdots + \beta_{jp}X_p}} \]
 
-where (X_1, X_2, \ldots, X_p) are the predictor variables, and (\beta*{k0},* \beta{k1}, \ldots, \beta\_{kp}) are the coefficients for category (k).
+where (X_1, X_2, \ldots, X_p) are the predictor variables, and (\beta*{k0},\* \beta{k1}, \ldots, \beta\_{kp}) are the coefficients for category (k).
 
 #### Estimation
 
